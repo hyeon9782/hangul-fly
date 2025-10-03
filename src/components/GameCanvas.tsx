@@ -7,8 +7,8 @@ import {
   isVowel,
   getRandomPosition,
   getRandomSpeed,
-  getRandomConsonants,
-  getRandomVowels,
+  // getRandomConsonants, // 하드 모드용
+  // getRandomVowels, // 하드 모드용
 } from "../utils/hangul";
 
 interface GameCanvasProps {
@@ -26,10 +26,13 @@ export const GameCanvas = memo(function GameCanvas({
     // 중복 제거
     const uniqueChars = [...new Set(chars)];
 
-    // 랜덤 자음 3개, 모음 3개 추가
-    const randomConsonants = getRandomConsonants(3);
-    const randomVowels = getRandomVowels(3);
-    const allChars = [...uniqueChars, ...randomConsonants, ...randomVowels];
+    // [하드 모드용] 랜덤 자음 3개, 모음 3개 추가
+    // const randomConsonants = getRandomConsonants(3);
+    // const randomVowels = getRandomVowels(3);
+    // const allChars = [...uniqueChars, ...randomConsonants, ...randomVowels];
+
+    // 일반 모드: 정답에 필요한 글자만 표시
+    const allChars = uniqueChars;
 
     // 각 글자의 위치와 속도를 미리 생성하여 고정
     return allChars.map((char) => ({

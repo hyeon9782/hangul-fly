@@ -1,18 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { GameCanvas } from "./components/GameCanvas";
-import { getRandomWord } from "./data/words";
+import { getRandomWord, type WordData } from "./data/words";
 
 function App() {
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [timeLeft, setTimeLeft] = useState(300);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [targetWord, setTargetWord] = useState(() => getRandomWord());
+  const [targetWordData, setTargetWordData] = useState<WordData>(() =>
+    getRandomWord()
+  );
   const [message, setMessage] = useState("");
   const [input, setInput] = useState("");
   const [isGameOver, setIsGameOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isComposingRef = useRef(false); // 한글 조합 중인지 체크
+
+  const targetWord = targetWordData.word;
+  const targetTheme = targetWordData.theme;
 
   // 게임 시작 시 input에 포커스
   useEffect(() => {
@@ -24,9 +29,14 @@ function App() {
   // 개발용: 정답 단어 콘솔 출력
   useEffect(() => {
     if (isPlaying) {
-      console.log("🎯 정답:", targetWord, `(${targetWord.length}글자)`);
+      console.log(
+        "🎯 정답:",
+        targetWord,
+        `(${targetWord.length}글자)`,
+        `[테마: ${targetTheme}]`
+      );
     }
-  }, [targetWord, isPlaying]);
+  }, [targetWord, targetTheme, isPlaying]);
 
   // 타이머 기능
   useEffect(() => {
@@ -59,8 +69,8 @@ function App() {
 
       // 다음 단어로 변경 (현재 단어 제외)
       setTimeout(() => {
-        const nextWord = getRandomWord(targetWord);
-        setTargetWord(nextWord);
+        const nextWordData = getRandomWord(targetWord);
+        setTargetWordData(nextWordData);
         setMessage("");
       }, 1500);
 
@@ -104,15 +114,15 @@ function App() {
     setTimeLeft(300);
     setMessage("");
     setInput("");
-    setTargetWord(getRandomWord()); // 게임 시작 시 새로운 단어
+    setTargetWordData(getRandomWord()); // 게임 시작 시 새로운 단어
   }
 
   function handlePass() {
     // 패스 - 콤보 초기화하고 다음 단어로
     setCombo(0);
     setInput("");
-    const nextWord = getRandomWord(targetWord);
-    setTargetWord(nextWord);
+    const nextWordData = getRandomWord(targetWord);
+    setTargetWordData(nextWordData);
     setMessage("패스! 다음 문제입니다 ⏭️");
 
     setTimeout(() => {
@@ -131,7 +141,7 @@ function App() {
       {/* UI 오버레이 */}
       <div className="absolute inset-0 pointer-events-none">
         {/* 상단 HUD */}
-        <div className="flex justify-between items-start p-6">
+        <div className="flex justify-between items-start p-6 gap-4">
           {/* 타이머 */}
           <div
             className={`bg-black/50 backdrop-blur-sm rounded-lg px-6 py-3 border-2 transition-colors ${
@@ -157,6 +167,17 @@ function App() {
             </div>
           </div>
 
+          {/* 테마 & 글자 수 힌트 */}
+          <div className="bg-black/50 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-green-500">
+            <div className="text-white text-sm font-medium mb-1">힌트</div>
+            <div className="text-green-400 text-2xl font-bold">
+              {targetTheme}
+            </div>
+            <div className="text-yellow-400 text-lg font-bold mt-1">
+              {targetWord.length}글자
+            </div>
+          </div>
+
           {/* 점수 */}
           <div className="bg-black/50 backdrop-blur-sm rounded-lg px-6 py-3 border-2 border-purple-500">
             <div className="text-white text-sm font-medium mb-1">점수</div>
@@ -168,6 +189,16 @@ function App() {
             <div className="text-white text-sm font-medium mb-1">콤보</div>
             <div className="text-white text-3xl font-bold">×{combo}</div>
           </div>
+
+          {/* 패스 버튼 */}
+          <button
+            onClick={handlePass}
+            disabled={!isPlaying || isGameOver}
+            className="pointer-events-auto bg-orange-500/80 hover:bg-orange-600 disabled:bg-gray-500/50 disabled:cursor-not-allowed text-white font-bold px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 border-2 border-orange-400"
+          >
+            <div className="text-sm mb-1">패스</div>
+            <div className="text-2xl">⏭️</div>
+          </button>
         </div>
 
         {/* 정답/오답 메시지 */}
@@ -192,22 +223,8 @@ function App() {
           <div className="max-w-2xl mx-auto">
             {/* 입력 표시 */}
             <div className="bg-black/70 backdrop-blur-md rounded-2xl px-8 py-6 border-2 border-green-500 shadow-2xl pointer-events-auto">
-              <div className="flex justify-between items-center mb-3">
-                <div className="text-white/70 text-sm font-medium">
-                  날아다니는 글자로 단어를 맞춰보세요!
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-yellow-400 text-sm font-bold">
-                    {targetWord.length}글자
-                  </div>
-                  <button
-                    onClick={handlePass}
-                    disabled={!isPlaying || isGameOver}
-                    className="pointer-events-auto bg-orange-500/80 hover:bg-orange-600 disabled:bg-gray-500/50 text-white text-xs font-bold px-3 py-1 rounded-lg transition-colors"
-                  >
-                    패스 ⏭️
-                  </button>
-                </div>
+              <div className="text-white/70 text-sm font-medium mb-3">
+                날아다니는 글자로 단어를 맞춰보세요!
               </div>
               <div className="relative">
                 {/* 실제 input 요소 (숨김) */}
@@ -290,10 +307,15 @@ function App() {
                 <div className="w-3 h-3 bg-red-400 rounded-full"></div>
                 <span>빨간색 = 모음 (ㅏ, ㅓ, ㅗ...)</span>
               </div>
-              <div className="mt-6 p-4 bg-white/10 rounded-lg">
+              <div className="mt-6 p-4 bg-white/10 rounded-lg space-y-2">
                 <p className="text-white/70 text-sm">
-                  💡 힌트: 정답 단어에 필요한 자음과 모음이 <br />
-                  방해 글자 3개씩과 함께 날아다닙니다!
+                  💡 힌트: 테마와 글자 수가 화면에 표시됩니다!
+                </p>
+                <p className="text-white/70 text-sm">
+                  ⏭️ 어려우면 패스 버튼으로 다음 문제로!
+                </p>
+                <p className="text-white/70 text-sm">
+                  ⏰ 제한 시간 5분 안에 최대한 많이 맞춰보세요!
                 </p>
               </div>
             </div>
