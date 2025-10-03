@@ -1,76 +1,115 @@
-# React + TypeScript + Vite
+# 한글 플라이 (Hangul Fly)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+3D 한글 조합 타이핑 게임 - 한글날 기념 프로젝트
 
-Currently, two official plugins are available:
+## 📖 프로젝트 소개
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+한글날을 기념하여 한글의 자음과 모음 조합 원리를 시각적이고 재미있게 체험할 수 있는 인터랙티브 3D 웹 게임입니다.
 
-## React Compiler
+3D 공간에서 날아다니는 자음(파란색 육면체)과 모음(빨간색 구체)을 보면서 키보드로 한글 단어를 입력하는 게임입니다.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+## 🎮 Phase 1 - 프로토타입 기능
 
-## Expanding the ESLint configuration
+현재 구현된 기능:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- ✅ Three.js 씬 설정 및 3D 렌더링 (@react-three/fiber 사용)
+- ✅ 자음/모음 3D 객체 생성 (색상/모양 구분)
+  - 자음: 파란색 육면체 (Box)
+  - 모음: 빨간색 구체 (Sphere)
+- ✅ 랜덤 움직임 애니메이션 구현
+  - 사인파 기반 부드러운 움직임
+  - 회전 애니메이션
+- ✅ 기본 키보드 입력 처리
+  - 한글 입력 인식
+  - Backspace로 수정
+  - Enter로 제출
+- ✅ 게임 UI
+  - 타이머, 점수, 콤보 표시
+  - 입력창
+  - 시작 화면
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+## 🛠 기술 스택
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **React 19** - UI 프레임워크
+- **TypeScript** - 타입 안정성
+- **@react-three/fiber** - React용 Three.js 렌더러
+- **@react-three/drei** - Three.js 헬퍼 라이브러리
+- **Three.js** - 3D 그래픽
+- **TailwindCSS** - 스타일링
+- **Vite** - 빌드 도구
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+## 🚀 시작하기
+
+### 설치
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 개발 서버 실행
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
-
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+npm run dev
 ```
+
+브라우저에서 `http://localhost:5173` 을 열어주세요.
+
+### 빌드
+
+```bash
+npm run build
+```
+
+### 프리뷰
+
+```bash
+npm run preview
+```
+
+## 📁 프로젝트 구조
+
+```
+src/
+├── components/
+│   ├── GameCanvas.tsx      # 3D 캔버스 메인 컴포넌트
+│   └── FloatingChar.tsx    # 날아다니는 자음/모음 객체
+├── hooks/
+│   └── useKeyboardInput.ts # 키보드 입력 훅
+├── utils/
+│   └── hangul.ts           # 한글 분해/조합 유틸리티
+├── types/
+│   └── index.ts            # 타입 정의
+├── App.tsx                 # 메인 앱 컴포넌트
+├── main.tsx                # 엔트리 포인트
+└── index.css               # 글로벌 스타일
+```
+
+## 🎯 다음 단계 (Phase 2+)
+
+- [ ] 게임 로직 구현 (단어 검증, 점수 계산)
+- [ ] 타이머 기능
+- [ ] 정답/오답 애니메이션
+- [ ] 파티클 이펙트
+- [ ] 난이도 설정
+- [ ] 랭킹 시스템
+- [ ] 사운드 효과
+
+자세한 내용은 [PRD 문서](./docs/PRD.md)를 참고하세요.
+
+## 🎨 게임 방법
+
+1. **게임 시작** 버튼을 클릭
+2. 3D 공간에서 날아다니는 자음과 모음을 확인
+3. 키보드로 타겟 단어를 입력
+4. Enter 키로 제출
+5. 제한 시간 내에 최대한 많은 단어를 맞추기!
+
+## 📝 참고 자료
+
+- [Three.js 공식 문서](https://threejs.org/docs/)
+- [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber)
+- [@react-three/drei](https://github.com/pmndrs/drei)
+- [한글 유니코드 구조](https://www.unicode.org/charts/PDF/UAC00.pdf)
 
 ### 커밋 규칙
 
