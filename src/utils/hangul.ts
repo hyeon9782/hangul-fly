@@ -127,3 +127,27 @@ export function getRandomPosition(): [number, number, number] {
 export function getRandomSpeed(): number {
   return 0.5 + Math.random() * 1.5;
 }
+
+/**
+ * 랜덤 자음 생성
+ */
+export function getRandomConsonants(count: number): string[] {
+  const result: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const randomIndex = Math.floor(Math.random() * CHO.length);
+    result.push(CHO[randomIndex]);
+  }
+  return result;
+}
+
+/**
+ * 랜덤 모음 생성
+ */
+export function getRandomVowels(count: number): string[] {
+  const result: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const randomIndex = Math.floor(Math.random() * JUNG.length);
+    result.push(JUNG[randomIndex]);
+  }
+  return result;
+}

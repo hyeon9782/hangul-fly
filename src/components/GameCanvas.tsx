@@ -1,25 +1,44 @@
+import { useMemo, memo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { FloatingChar } from "./FloatingChar";
+import { HangulChar3D } from "./HangulChar3D";
 import {
   decomposeHangul,
   isVowel,
   getRandomPosition,
   getRandomSpeed,
+  getRandomConsonants,
+  getRandomVowels,
 } from "../utils/hangul";
-import { HangulChar3D } from "./HangulChar3D";
 
 interface GameCanvasProps {
   targetWord?: string;
 }
 
-export function GameCanvas({ targetWord = "한글날" }: GameCanvasProps) {
-  // 타겟 단어를 자음/모음으로 분해
-  const chars = decomposeHangul(targetWord);
+export const GameCanvas = memo(function GameCanvas({
+  targetWord = "한글날",
+}: GameCanvasProps) {
+  // 글자 데이터를 메모이제이션 - targetWord가 변경될 때만 재생성
+  const charDataList = useMemo(() => {
+    // 타겟 단어를 자음/모음으로 분해
+    const chars = decomposeHangul(targetWord);
 
-  // 추가 랜덤 글자들 (방해 요소)
-  const distractorChars = ["ㄱ", "ㄴ", "ㅏ", "ㅓ", "ㅂ", "ㅅ"];
-  const allChars = [...chars, ...distractorChars];
+    // 중복 제거
+    const uniqueChars = [...new Set(chars)];
+
+    // 랜덤 자음 3개, 모음 3개 추가
+    const randomConsonants = getRandomConsonants(3);
+    const randomVowels = getRandomVowels(3);
+    const allChars = [...uniqueChars, ...randomConsonants, ...randomVowels];
+
+    // 각 글자의 위치와 속도를 미리 생성하여 고정
+    return allChars.map((char) => ({
+      char,
+      isVowel: isVowel(char),
+      position: getRandomPosition(),
+      speed: getRandomSpeed(),
+    }));
+  }, [targetWord]);
 
   return (
     <Canvas
@@ -44,30 +63,18 @@ export function GameCanvas({ targetWord = "한글날" }: GameCanvasProps) {
       <Environment preset="city" />
 
       {/* 날아다니는 3D 한글 글자들 */}
-      {allChars.map((char, index) => {
-        const position = getRandomPosition();
-        const speed = getRandomSpeed();
-        const vowel = isVowel(char);
-
-        return (
-          <FloatingChar
-            key={`${char}-${index}`}
-            char={char}
-            isVowel={vowel}
-            position={position}
-            speed={speed}
-          />
-          // <HangulChar3D
-          //   key={`${char}-${index}`}
-          //   char={char}
-          //   isConsonant={vowel}
-          //   position={position}
-          // />
-        );
-      })}
+      {charDataList.map((charData, index) => (
+        <HangulChar3D
+          key={`${charData.char}-${index}`}
+          char={charData.char}
+          isVowel={charData.isVowel}
+          position={charData.position}
+          speed={charData.speed}
+        />
+      ))}
 
       {/* 카메라 컨트롤 (개발 중에만 사용) */}
       <OrbitControls enableZoom={true} enablePan={true} />
     </Canvas>
   );
-}
+});

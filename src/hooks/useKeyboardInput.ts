@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
-export function useKeyboardInput() {
+interface UseKeyboardInputProps {
+  onSubmit?: (value: string) => void;
+}
+
+export function useKeyboardInput(props?: UseKeyboardInputProps) {
   const [input, setInput] = useState("");
 
   useEffect(() => {
@@ -8,9 +12,7 @@ export function useKeyboardInput() {
       // Enter: 제출
       if (e.key === "Enter") {
         if (input.trim()) {
-          // 제출 이벤트 발생 (나중에 게임 로직과 연결)
-          console.log("제출:", input);
-          setInput("");
+          props?.onSubmit?.(input);
         }
         return;
       }
@@ -29,7 +31,7 @@ export function useKeyboardInput() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [input]);
+  }, [input, props]);
 
   return { input, setInput };
 }

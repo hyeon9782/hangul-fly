@@ -1,108 +1,79 @@
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Text3D, Center, OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
+import { useRef, memo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { Text3D, Center } from "@react-three/drei";
+import type { Group } from "three";
 
 interface HangulChar3DProps {
   char: string;
+  isVowel: boolean;
   position: [number, number, number];
-  isConsonant: boolean;
+  speed: number;
 }
 
-// 개별 한글 문자 컴포넌트
-export function HangulChar3D({
+export const HangulChar3D = memo(function HangulChar3D({
   char,
+  isVowel,
   position,
-  isConsonant,
+  speed,
 }: HangulChar3DProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<Group>(null);
+  const timeRef = useRef(0);
 
-  // 애니메이션: 회전하면서 떠다니기
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x =
-        Math.sin(state.clock.elapsedTime + position[0]) * 0.2;
-      meshRef.current.rotation.y += 0.01;
-      meshRef.current.position.y =
-        position[1] +
-        Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.3;
-    }
+  // 초기 위치와 움직임 방향을 저장
+  const initialPos = useRef(position);
+  const direction = useRef({
+    x: (Math.random() - 0.5) * 2,
+    y: (Math.random() - 0.5) * 2,
+    z: (Math.random() - 0.5) * 2,
   });
 
+  useFrame((_state, delta) => {
+    if (!groupRef.current) return;
+
+    timeRef.current += delta * speed;
+
+    // 부드러운 회전 애니메이션
+    groupRef.current.rotation.x += delta * 0.5;
+    groupRef.current.rotation.y += delta * 0.3;
+
+    // 사인파를 이용한 부드러운 움직임
+    const time = timeRef.current;
+    groupRef.current.position.x =
+      initialPos.current[0] + Math.sin(time + direction.current.x) * 3;
+    groupRef.current.position.y =
+      initialPos.current[1] + Math.cos(time + direction.current.y) * 2;
+    groupRef.current.position.z =
+      initialPos.current[2] + Math.sin(time * 0.5 + direction.current.z) * 2;
+  });
+
+  // 자음: 파란색 계열, 모음: 빨간색 계열
+  const color = isVowel ? "#ff6b6b" : "#4dabf7";
+
   return (
-    <Center position={position}>
-      <Text3D
-        ref={meshRef}
-        font="/fonts/NanumGothic_Bold.json" // 폰트 파일 필요
-        size={1}
-        height={0.2}
-        curveSegments={12}
-        bevelEnabled
-        bevelThickness={0.02}
-        bevelSize={0.02}
-        bevelOffset={0}
-        bevelSegments={5}
-      >
-        {char}
-        <meshStandardMaterial
-          color={isConsonant ? "#3b82f6" : "#ef4444"} // 자음: 파랑, 모음: 빨강
-          metalness={0.3}
-          roughness={0.4}
-        />
-      </Text3D>
-    </Center>
+    <group ref={groupRef} position={position}>
+      <Center>
+        <Text3D
+          font="/fonts/NanumGothic_Bold.json"
+          size={1.5}
+          height={0.5}
+          curveSegments={12}
+          bevelEnabled={true}
+          bevelThickness={0.1}
+          bevelSize={0.05}
+          bevelOffset={0}
+          bevelSegments={4}
+        >
+          {char}
+          <meshStandardMaterial
+            color={color}
+            emissive={color}
+            emissiveIntensity={0.5}
+            metalness={0.3}
+            roughness={0.4}
+            toneMapped={false}
+          />
+        </Text3D>
+      </Center>
+    </group>
   );
-}
-
-// // 여러 한글 문자를 화면에 배치
-// function HangulScene({
-//   chars,
-// }: {
-//   chars: Array<{ char: string; isConsonant: boolean }>;
-// }) {
-//   return (
-//     <>
-//       <ambientLight intensity={0.5} />
-//       <directionalLight position={[10, 10, 5]} intensity={1} />
-//       <pointLight position={[-10, -10, -5]} intensity={0.5} />
-
-//       {chars.map((item, index) => {
-//         // 랜덤한 위치에 배치
-//         const x = (Math.random() - 0.5) * 10;
-//         const y = (Math.random() - 0.5) * 5;
-//         const z = (Math.random() - 0.5) * 5;
-
-//         return (
-//           <HangulChar3D
-//             key={index}
-//             char={item.char}
-//             position={[x, y, z]}
-//             isConsonant={item.isConsonant}
-//           />
-//         );
-//       })}
-
-//       <OrbitControls />
-//     </>
-//   );
-// }
-
-// // 메인 컴포넌트
-// export default function HangulGame() {
-//   // 예시: '사과' 분해 → ㅅ, ㅏ, ㄱ, ㅘ
-//   const testChars = [
-//     { char: "ㅅ", isConsonant: true },
-//     { char: "ㅏ", isConsonant: false },
-//     { char: "ㄱ", isConsonant: true },
-//     { char: "ㅘ", isConsonant: false },
-//   ];
-
-//   return (
-//     <div className="w-screen h-screen">
-//       <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
-//         <color attach="background" args={["#0f172a"]} />
-//         <HangulScene chars={testChars} />
-//       </Canvas>
-//     </div>
-//   );
-// }
+});
